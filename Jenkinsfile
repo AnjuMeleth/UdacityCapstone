@@ -38,7 +38,8 @@ pipeline {
        		echo 'Deploying to AWS...'
 		dir ('AppDeployment') {
         		withAWS(credentials: 'aws-credentials', region: 'us-west-2') {
-            		sh "aws eks --region us-west-2 update-kubeconfig --name  eksCluster-nIzp7AtrUcIw"
+            		sh 'echo $PATH'
+			sh "aws eks --region us-west-2 update-kubeconfig --name  eksCluster-nIzp7AtrUcIw"
             		sh "pwd"
 			sh "kubectl apply -f udacity-capstone.yaml"
        			}
