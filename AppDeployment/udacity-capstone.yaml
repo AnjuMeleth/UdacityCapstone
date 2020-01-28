@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: front-end
-        image: anjurose/udacity-webapp:21
+        image: anjurose/udacity-webapp:latest
         ports:
         - containerPort: 5000
