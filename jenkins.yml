@@ -1,0 +1,55 @@
+Description: 
+  Anju M Dominic / Udacity Jenkins server
+
+Parameters:
+  EnvironmentName:
+    Description: An environment name prfixed to resources
+    Type: String
+
+Resources:
+  JenkinsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to ec2 and ssh access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+    
+  Jenkins:
+    Type: AWS::EC2::Instance       
+    Properties:
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          sudo apt-get update -y
+          sudo apt-get install default-jdk -y
+          wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
+          sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+          sudo apt-get update -y
+          sudo apt-get install jenkins -y
+          wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64
+          sudo chmod +x /bin/hadolint
+          sudo apt-get update
+          sudo apt-get install docker.io
+          sudo usermod -aG docker jenkins
+          sudo apt-get update
+      SecurityGroupIds:
+        - Ref: JenkinsSecurityGroup
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sdk"
+          Ebs:
+            VolumeSize: "10"
+      ImageId: ami-005bdb005fb00e791
+      InstanceType: t3.large
+      KeyName: docker_key
+  
+Outputs:
+  Website:
+    Description: The Public DNS for the EC2 Instance
+    Value: !Join ['', ['http://', !GetAtt 'Jenkins.PublicDnsName', ':8080']]        

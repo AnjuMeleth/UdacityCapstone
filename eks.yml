@@ -1,0 +1,80 @@
+
+Description:
+  Anju M Dominic / kubernetes cluster
+
+Parameters:
+  EnvironmentName:
+    Description: An environment name prfixed to resources
+    Type: String
+
+Resources:
+
+  #
+  # IAM Role needed by the cluster
+  #
+  eksClusterRole:
+    Description: Allows EKS to manage clusters on your behalf.
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+            Effect: Allow
+            Principal:
+              Service:
+                - eks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+        - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+
+  ClusterControlPlaneSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Cluster communication with worker nodes
+      VpcId:
+        Fn::ImportValue:
+          !Sub "${EnvironmentName}-VPCID"
+
+  eksCluster:
+    Type: "AWS::EKS::Cluster"
+    Properties:
+      Version: "1.14"
+      RoleArn: !GetAtt eksClusterRole.Arn
+      ResourcesVpcConfig:
+        SecurityGroupIds:
+          - !Ref ClusterControlPlaneSecurityGroup
+        SubnetIds:
+          - Fn::ImportValue:
+              !Sub "${EnvironmentName}-PUB1-SN"
+          - Fn::ImportValue:
+              !Sub "${EnvironmentName}-PUB2-SN"
+
+Outputs:
+  ClusterName:
+    Value: !Ref eksCluster
+    Description: Cluster Name
+    Export:
+      Name:
+        Fn::Sub: "${EnvironmentName}-ClusterName"
+
+  ClusterArn:
+    Value: !GetAtt eksCluster.Arn
+    Description: eks Cluster Arn
+    Export:
+      Name:
+        Fn::Sub: "${EnvironmentName}-ClusterArn"
+
+  ClusterEndpoint:
+    Value: !GetAtt eksCluster.Endpoint
+    Description: eksCluster Endpoint
+    Export:
+      Name:
+        Fn::Sub: "${EnvironmentName}-ClusterEndpoint"
+
+  ClusterControlPlaneSecurityGroup:
+    Value: !Ref ClusterControlPlaneSecurityGroup
+    Description: ClusterControlPlaneSecurityGroup
+    Export:
+      Name:
+        Fn::Sub: "${EnvironmentName}-ClusterControlPlaneSecurityGroup"
