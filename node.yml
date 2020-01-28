@@ -117,7 +117,7 @@ Resources:
           #!/bin/bash
           apt-get update -y
           apt-get install docker.io -y
-      ImageId: ami-005bdb005fb00e791
+      ImageId: ami-0c13bb9cbfd007e56 
       IamInstanceProfile: !Ref NodeInstanceProfile
       SecurityGroups:
       - Ref: NodeSecurityGroup
