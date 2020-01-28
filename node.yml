@@ -102,7 +102,7 @@ Resources:
           !Sub "${EnvironmentName}-PUB-NETS"
       LaunchConfigurationName:
         Ref: NodeLaunchConfig
-      MinSize: '4'
+      MinSize: '3'
       MaxSize: '6'
     UpdatePolicy:
       AutoScalingRollingUpdate:
